@@ -25,61 +25,155 @@ Complexity Analysis:
 */
 
 // Memoization
-int fmemo(int i, int j, vector<vector<int>>& grid, vector<vector<int>>& dp) {
-    if (i < 0 || j < 0)
-        return 1e9;
 
-    if (dp[i][j] != -1)
-        return dp[i][j];
+def minSumPathUtil(i, j, matrix, dp):
+    # Base case: If we are at the top-left corner, return the value of that cell.
+    if i == 0 and j == 0:
+        return matrix[0][0]
+    
+    # Base case: If we are out of bounds (negative indices), return a very large value.
+    if i < 0 or j < 0:
+        return int(1e9)
+    
+    # If we have already calculated the minimum sum for this cell, return it.
+    if dp[i][j] != -1:
+        return dp[i][j]
 
-    if (i == 0 && j == 0)
-        return dp[i][j] = grid[i][j];
+    # Calculate the minimum sum path recursively by considering both up and left moves.
+    up = matrix[i][j] + minSumPathUtil(i-1, j, matrix, dp)
+    left = matrix[i][j] + minSumPathUtil(i, j-1, matrix, dp)
 
-    int top = fmemo(i - 1, j, grid, dp);
-    int left = fmemo(i, j - 1, grid, dp);
-    return dp[i][j] = min(top, left) + grid[i][j];
-}
+    # Store the minimum of the two possible paths in the DP table.
+    dp[i][j] = min(up, left)
+    return dp[i][j]
+
+
+def minSumPath(n, m, matrix):
+    # Create a DP table initialized with -1 values.
+    dp = [[-1 for j in range(m)] for i in range(n)]
+    
+    # Call the utility function to find the minimum sum path.
+    return minSumPathUtil(n-1, m-1, matrix, dp)
+
+
+def main():
+    # Example matrix with values representing cell costs.
+    matrix = [[5, 9, 6],
+              [11, 5, 2]]
+
+    n = len(matrix)
+    m = len(matrix[0])
+
+    # Call the minSumPath function and print the result.
+    print(minSumPath(n, m, matrix))
+
+
+if __name__ == '__main__':
+    main()
+
+
 
 // Tabulation
-int ftab(int m, int n, vector<vector<int>>& grid){
-    vector<vector<int>> dp(m,vector<int>(n));
-    for(int i=0; i<m; i++){
-        for(int j=0; j<n; j++){
-            if(i==0 && j==0){
-                dp[i][j] = grid[i][j];
-                continue;
-            }
-            int top = 1e9, left = 1e9;
-            if(i-1>=0) top = dp[i-1][j];
-            if(j-1>=0) left = dp[i][j-1];
-            dp[i][j] = min(top,left)+grid[i][j];
-        }
-    }
-    return dp[m-1][n-1];
-}
+
+def minSumPath(n, m, matrix):
+    # Create a DP table initialized with zeros.
+    dp = [[0 for j in range(m)] for i in range(n)]
+    
+    # Loop through each cell in the matrix.
+    for i in range(n):
+        for j in range(m):
+            if i == 0 and j == 0:
+                # Base case: If we are at the top-left corner, set dp[i][j] to the value of that cell.
+                dp[i][j] = matrix[i][j]
+            else:
+                # Calculate the cost of moving up from the cell (i, j).
+                up = matrix[i][j]
+                if i > 0:
+                    up += dp[i-1][j]
+                else:
+                    # If we are at the top row and can't move up, set 'up' to a large value.
+                    up += int(1e9)
+                
+                # Calculate the cost of moving left from the cell (i, j).
+                left = matrix[i][j]
+                if j > 0:
+                    left += dp[i][j-1]
+                else:
+                    # If we are at the leftmost column and can't move left, set 'left' to a large value.
+                    left += int(1e9)
+                
+                # Store the minimum cost of reaching the current cell in dp[i][j].
+                dp[i][j] = min(up, left)
+    
+    # The result is stored in the bottom-right corner of the DP table.
+    return dp[n-1][m-1]
+
+def main():
+    # Example matrix with values representing cell costs.
+    matrix = [[5, 9, 6], [11, 5, 2]]
+    n = len(matrix)
+    m = len(matrix[0])
+    
+    # Call the minSumPath function and print the result.
+    print(minSumPath(n, m, matrix))
+
+if __name__ == "__main__":
+    main()
+
+
 
 // Space Optimization
-int fopt(int m, int n, vector<vector<int>>& grid){
-    vector<int> prev(n);
-    for(int i=0; i<m; i++){
-        vector<int> curr(n);
-        for(int j=0; j<n; j++){
-            if(i==0 && j==0){
-                curr[j] = grid[i][j];
-                continue;
-            }
-            int top = 1e9, left = 1e9;
-            if(i-1>=0) top = prev[j];
-            if(j-1>=0) left = curr[j-1];
-            curr[j] = min(top,left)+grid[i][j];
-        }
-        prev = curr;
-    }
-    return prev[n-1];
-}
 
-int minPathSum(vector<vector<int>>& grid) {
-    int m = grid.size(), n = grid[0].size();
-    vector<vector<int>> dp(m, vector<int>(n, -1));
-    return fmemo(m - 1, n - 1, grid, dp);
-}
+def minSumPath(n, m, matrix):
+    # Initialize the 'prev' list to keep track of the minimum cost in the previous row.
+    prev = [0] * m
+    
+    # Loop through each row of the matrix.
+    for i in range(n):
+        # Initialize a temporary list to store the minimum cost for the current row.
+        temp = [0] * m
+        
+        # Loop through each cell in the current row.
+        for j in range(m):
+            if i == 0 and j == 0:
+                # Base case: If we are at the top-left corner, set 'temp[j]' to the value of that cell.
+                temp[j] = matrix[i][j]
+            else:
+                # Calculate the cost of moving up from the cell (i, j).
+                up = matrix[i][j]
+                if i > 0:
+                    up += prev[j]
+                else:
+                    # If we are at the top row and can't move up, set 'up' to a large value.
+                    up = int(1e9)
+                
+                # Calculate the cost of moving left from the cell (i, j).
+                left = matrix[i][j]
+                if j > 0:
+                    left += temp[j-1]
+                else:
+                    # If we are at the leftmost column and can't move left, set 'left' to a large value.
+                    left = int(1e9)
+                
+                # Store the minimum cost of reaching the current cell in 'temp[j]'.
+                temp[j] = min(up, left)
+        
+        # Update 'prev' with the 'temp' list for the next iteration.
+        prev = temp
+    
+    # The result is stored in the last element of the 'prev' list (bottom-right corner).
+    return prev[m - 1]
+
+def main():
+    # Example matrix with values representing cell costs.
+    matrix = [[5, 9, 6], [11, 5, 2]]
+    n = len(matrix)
+    m = len(matrix[0])
+    
+    # Call the minSumPath function and print the result.
+    print(minSumPath(n, m, matrix))
+
+if __name__ == '__main__':
+    main()
+
+
