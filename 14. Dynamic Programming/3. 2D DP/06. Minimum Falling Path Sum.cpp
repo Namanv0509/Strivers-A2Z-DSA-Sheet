@@ -22,78 +22,177 @@ Complexity Analysis:
 - The time complexity of the fmemo function is O(n^2) since we are calculating the minimum sum for each cell only once and storing it in the dp array.
 - The space complexity is also O(n^2) to store the dp array.
 
+Solution : https://takeuforward.org/data-structure/minimum-maximum-falling-path-sum-dp-12/
+
 */
 
 // Memoization
-int fmemo(int i, int j, vector<vector<int>>& mat, vector<vector<int>>& dp) {
-    if (j < 0 || j >= mat[0].size())
-        return 1e9;
 
-    if (dp[i][j] != -1)
-        return dp[i][j];
+import sys
 
-    if (i == 0)
-        return dp[i][j] = mat[i][j];
+# Recursive function to find the maximum path sum starting from cell (i, j)
+def getMaxUtil(i, j, m, matrix, dp):
+    # Base case: If j is out of bounds, return a large negative value
+    if j < 0 or j >= m:
+        return -int(1e9)
+    
+    # Base case: If we are at the top row (i == 0), return the value in the current cell
+    if i == 0:
+        return matrix[0][j]
+    
+    # Check if the maximum path sum for this cell has already been computed
+    if dp[i][j] != -1:
+        return dp[i][j]
+    
+    # Calculate three possible moves: going up, going up-left, and going up-right
+    up = matrix[i][j] + getMaxUtil(i - 1, j, m, matrix, dp)
+    leftDiagonal = matrix[i][j] + getMaxUtil(i - 1, j - 1, m, matrix, dp)
+    rightDiagonal = matrix[i][j] + getMaxUtil(i - 1, j + 1, m, matrix, dp)
+    
+    # Store the maximum of the three moves in the memoization table
+    dp[i][j] = max(up, max(leftDiagonal, rightDiagonal))
+    return dp[i][j]
 
-    int a = fmemo(i - 1, j - 1, mat, dp);
-    int b = fmemo(i - 1, j, mat, dp);
-    int c = fmemo(i - 1, j + 1, mat, dp);
+# Function to find the maximum path sum in the matrix
+def getMaxPathSum(matrix):
+    n = len(matrix)  # Number of rows
+    m = len(matrix[0])  # Number of columns
+    dp = [[-1 for j in range(m)] for i in range(n)]  # Initialize a memoization table
+    maxi = -sys.maxsize  # Initialize the maximum sum to a large negative value
+    
+    # Iterate through the first row and find the maximum path sum starting from each cell
+    for j in range(m):
+        ans = getMaxUtil(n - 1, j, m, matrix, dp)
+        maxi = max(maxi, ans)
+    
+    return maxi  # Return the maximum path sum
 
-    return dp[i][j] = min(a, min(b, c)) + mat[i][j];
-}
+def main():
+    # Define the input matrix
+    matrix = [[1, 2, 10, 4], [100, 3, 2, 1], [1, 1, 20, 2], [1, 2, 2, 1]]
+    
+    # Call the getMaxPathSum function and print the result
+    print(getMaxPathSum(matrix))
+
+if __name__ == "__main__":
+    main()
+
+
 
 // Tabulation
-int ftab(int n, vector<vector<int>>& mat){
-    vector<vector<int>> dp(n,vector<int>(n));
-    for(int i=0; i<n; i++){
-        for(int j=0; j<n; j++){
-            if(i==0){
-                dp[i][j] = mat[i][j];
-                continue;
-            }
-            int a = 1e9, c = 1e9;
-            if(j-1>=0) a = dp[i-1][j-1];
-            int b = dp[i-1][j];
-            if(j+1<n) c = dp[i-1][j+1];
-            dp[i][j] = min(a,min(b,c))+mat[i][j];
-        }
-    }
-    int ans = INT_MAX;
-    for(auto i:dp[n-1]) ans = min(ans,i);
-    return ans;
-}
+
+import sys
+
+# Function to find the maximum path sum in the matrix
+def getMaxPathSum(matrix):
+    n = len(matrix)  # Number of rows
+    m = len(matrix[0])  # Number of columns
+    
+    # Initialize a dynamic programming table (dp) with zeros
+    dp = [[0 for j in range(m)] for i in range(n)]
+    
+    # Initializing the first row of dp as the base condition
+    for j in range(m):
+        dp[0][j] = matrix[0][j]
+    
+    # Iterate through the matrix to compute the maximum path sum
+    for i in range(1, n):
+        for j in range(m):
+            # Calculate the three possible moves: up, left diagonal, and right diagonal
+            up = matrix[i][j] + dp[i - 1][j]
+            
+            # Handle left diagonal
+            left_diagonal = matrix[i][j]
+            if j - 1 >= 0:
+                left_diagonal += dp[i - 1][j - 1]
+            else:
+                left_diagonal += -int(1e9)  # A large negative value if out of bounds
+            
+            # Handle right diagonal
+            right_diagonal = matrix[i][j]
+            if j + 1 < m:
+                right_diagonal += dp[i - 1][j + 1]
+            else:
+                right_diagonal += -int(1e9)  # A large negative value if out of bounds
+            
+            # Store the maximum of the three moves in dp
+            dp[i][j] = max(up, left_diagonal, right_diagonal)
+    
+    # Find the maximum path sum in the last row of dp
+    maxi = -sys.maxsize
+    for j in range(m):
+        maxi = max(maxi, dp[n - 1][j])
+    
+    return maxi  # Return the maximum path sum
+
+def main():
+    # Define the input matrix
+    matrix = [[1, 2, 10, 4], [100, 3, 2, 1], [1, 1, 20, 2], [1, 2, 2, 1]]
+    
+    # Call the getMaxPathSum function and print the result
+    print(getMaxPathSum(matrix))
+
+if __name__ == "__main__":
+    main()
+
+
 
 // Space Optmization
-int fopt(int n, vector<vector<int>>& mat){
-    vector<int> prev(n);
-    for(int i=0; i<n; i++){
-        vector<int> curr(n);
-        for(int j=0; j<n; j++){
-            if(i==0){
-                curr[j] = mat[i][j];
-                continue;
-            }
-            int a = 1e9, c = 1e9;
-            if(j-1>=0) a = prev[j-1];
-            int b = prev[j];
-            if(j+1<n) c = prev[j+1];
-            curr[j] = min(a,min(b,c))+mat[i][j];
-        }
-        prev = curr;
-    }
-    int ans = INT_MAX;
-    for(auto i:prev) ans = min(ans,i);
-    return ans;
-}
 
-int minFallingPathSum(vector<vector<int>>& matrix) {
-    int n = matrix.size();
-    vector<vector<int>> dp(n, vector<int>(n, -1));
+import sys
 
-    int ans = 1e9;
-    for (int i = 0; i < n; i++) {
-        ans = min(ans, fmemo(n - 1, i, matrix, dp));
-    }
+# Function to find the maximum path sum in the matrix
+def getMaxPathSum(matrix):
+    n = len(matrix)  # Number of rows
+    m = len(matrix[0])  # Number of columns
 
-    return ans;
-}
+    # Initialize two lists: prev (previous row) and cur (current row)
+    prev = [0] * m
+    cur = [0] * m
+
+    # Initializing the first row of prev as the base condition
+    for j in range(m):
+        prev[j] = matrix[0][j]
+
+    # Iterate through the matrix to compute the maximum path sum
+    for i in range(1, n):
+        for j in range(m):
+            # Calculate the three possible moves: up, left diagonal, and right diagonal
+            up = matrix[i][j] + prev[j]
+
+            leftDiagonal = matrix[i][j]
+            if j - 1 >= 0:
+                leftDiagonal += prev[j - 1]
+            else:
+                leftDiagonal += -int(1e9)  # A large negative value if out of bounds
+
+            rightDiagonal = matrix[i][j]
+            if j + 1 < m:
+                rightDiagonal += prev[j + 1]
+            else:
+                rightDiagonal += -int(1e9)  # A large negative value if out of bounds
+
+            # Store the maximum of the three moves in the current row (cur)
+            cur[j] = max(up, max(leftDiagonal, rightDiagonal))
+
+        # Update prev with the values of cur for the next iteration
+        prev = cur[:]
+
+    # Find the maximum path sum in the last row of prev
+    maxi = -sys.maxsize
+    for j in range(m):
+        maxi = max(maxi, prev[j])
+
+    return maxi  # Return the maximum path sum
+
+def main():
+    # Define the input matrix
+    matrix = [[1, 2, 10, 4], [100, 3, 2, 1], [1, 1, 20, 2], [1, 2, 2, 1]]
+
+    # Call the getMaxPathSum function and print the result
+    print(getMaxPathSum(matrix))
+
+if __name__ == '__main__':
+    main()
+
+
