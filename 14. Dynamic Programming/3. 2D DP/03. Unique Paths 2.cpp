@@ -29,75 +29,166 @@ Complexity Analysis:
 - The space complexity is also O(m x n) to store the dp array.
 
 Note: The given test cases are generated such that the answer will be less than or equal to 2 x 10^9.
+
+Solution : https://takeuforward.org/data-structure/grid-unique-paths-2-dp-9/
 */
 
 // Memoization
-int fmemo(int i, int j, vector<vector<int>>& grid, vector<vector<int>>& dp) {
-    if (i < 0 || j < 0)
-        return 0;
 
-    if (dp[i][j] != -1)
-        return dp[i][j];
+def mazeObstaclesUtil(i, j, maze, dp):
+    # Base case: If we are out of bounds or at an obstacle, return 0.
+    if i < 0 or j < 0 or maze[i][j] == -1:
+        return 0
 
-    if (grid[i][j] == 1)
-        return dp[i][j] = 0;
+    # Base case: If we reach the starting point, return 1 (we found a path).
+    if i == 0 and j == 0:
+        return 1
 
-    int top = fmemo(i - 1, j, grid, dp);
-    int left = fmemo(i, j - 1, grid, dp);
-    return dp[i][j] = top + left;
-}
+    # If we've already computed the number of paths for this position, return it.
+    if dp[i][j] != -1:
+        return dp[i][j]
+
+    # Move up and left in the maze, and recursively calculate the number of paths.
+    up = mazeObstaclesUtil(i - 1, j, maze, dp)
+    left = mazeObstaclesUtil(i, j - 1, maze, dp)
+
+    # Store the result in the DP table and return it.
+    dp[i][j] = up + left
+    return dp[i][j]
+
+def mazeObstacles(n, m, maze):
+    # Create a DP table initialized with -1 values.
+    dp = [[-1 for j in range(m)] for i in range(n)]
+    
+    # Call the utility function to find the number of paths.
+    return mazeObstaclesUtil(n - 1, m - 1, maze, dp)
+
+def main():
+    # Example maze with 0s representing open paths and -1 representing obstacles.
+    maze = [[0, 0, 0], [0, -1, 0], [0, 0, 0]]
+    n = len(maze)
+    m = len(maze[0])
+
+    # Call the mazeObstacles function and print the result.
+    print(mazeObstacles(n, m, maze))
+
+if __name__ == '__main__':
+    main()
+
+
 
 // Tabulation
-int ftab(int m, int n, vector<vector<int>>& grid){
-    vector<vector<int>> dp(m,vector<int>(n));
-    for(int i=0; i<m; i++){
-        for(int j=0; j<n; j++){
-            if(i==0 && j==0){
-                dp[i][j] = 1;
-                continue;
-            }
-            if(grid[i][j]==1){
-                dp[i][j] = 0;
-                continue;
-            }
-            int top = 0, left = 0;
-            if(i-1>=0) top = dp[i-1][j];
-            if(j-1>=0) left = dp[i][j-1];
-            dp[i][j] = top+left;
-        }
-    }
-    return dp[m-1][n-1];
-}
+
+def mazeObstaclesUtil(n, m, maze, dp):
+    # Loop through each cell in the maze
+    for i in range(n):
+        for j in range(m):
+            # Base conditions:
+            # If we encounter an obstacle or we are out of bounds, set dp[i][j] to 0.
+            if i > 0 and j > 0 and maze[i][j] == -1:
+                dp[i][j] = 0
+                continue
+            # If we are at the starting point, set dp[i][j] to 1.
+            if i == 0 and j == 0:
+                dp[i][j] = 1
+                continue
+            
+            # Initialize variables to store the number of paths coming from up and left.
+            up = 0
+            left = 0
+            
+            # If we can move up (i > 0), update 'up' with the value from the cell above.
+            if i > 0:
+                up = dp[i - 1][j]
+            
+            # If we can move left (j > 0), update 'left' with the value from the cell to the left.
+            if j > 0:
+                left = dp[i][j - 1]
+            
+            # Calculate the total number of paths to reach this cell and store it in dp[i][j].
+            dp[i][j] = up + left
+    
+    # The result is stored in the bottom-right corner of the DP table.
+    return dp[n - 1][m - 1]
+
+def mazeObstacles(n, m, maze):
+    # Create a DP table initialized with -1 values.
+    dp = [[-1 for j in range(m)] for i in range(n)]
+    
+    # Call the utility function to find the number of paths.
+    return mazeObstaclesUtil(n, m, maze, dp)
+
+def main():
+    # Example maze with 0s representing open paths and -1 representing obstacles.
+    maze = [[0, 0, 0],
+            [0, -1, 0],
+            [0, 0, 0]]
+    n = len(maze)
+    m = len(maze[0])
+    
+    # Call the mazeObstacles function and print the result.
+    print(mazeObstacles(n, m, maze))
+
+if __name__ == "__main__":
+    main()
+
+
 
 // Space Optimization
-int fopt(int m, int n, vector<vector<int>>& grid){
-    vector<int> prev(n);
-    for(int i=0; i<m; i++){
-        vector<int> curr(n);
-        for(int j=0; j<n; j++){
-            if(grid[i][j]==1){
-                curr[j]=0;
-                continue;
-            }
-            if(i==0 && j==0){
-                curr[j]=1;
-                continue;
-            }
-            int top = 0, left = 0;
-            if(i-1>=0) top = prev[j];
-            if(j-1>=0) left = curr[j-1];
-            curr[j] = top+left;
-        }
-        prev = curr;
-    }
-    return prev[n-1];
-}
 
-int uniquePathsWithObstacles(vector<vector<int>>& obstacleGrid) {
-    int m = obstacleGrid.size(), n = obstacleGrid[0].size();
-    if (obstacleGrid[0][0] == 1 || obstacleGrid[m - 1][n - 1] == 1)
-        return 0;
+def mazeObstacles(n, m, maze):
+    # Initialize the 'prev' list to keep track of the number of paths in the previous row.
+    prev = [0] * m
+    
+    # Loop through each row of the maze.
+    for i in range(n):
+        # Initialize a temporary list to store the number of paths for the current row.
+        temp = [0] * m
+        
+        # Loop through each cell in the current row.
+        for j in range(m):
+            # Base conditions:
+            # If we encounter an obstacle or we are out of bounds, set 'temp[j]' to 0.
+            if i > 0 and j > 0 and maze[i][j] == -1:
+                temp[j] = 0
+                continue
+            # If we are at the starting point, set 'temp[j]' to 1.
+            if i == 0 and j == 0:
+                temp[j] = 1
+                continue
+            
+            # Initialize variables to store the number of paths coming from up and left.
+            up = 0
+            left = 0
+            
+            # If we can move up (i > 0), update 'up' with the value from the previous row.
+            if i > 0:
+                up = prev[j]
+            
+            # If we can move left (j > 0), update 'left' with the value from the current row.
+            if j > 0:
+                left = temp[j - 1]
+            
+            # Calculate the total number of paths to reach this cell and store it in 'temp[j]'.
+            temp[j] = up + left
+        
+        # Update 'prev' with the 'temp' list for the next iteration.
+        prev = temp
+    
+    # The result is stored in the last element of the 'prev' list (bottom-right corner).
+    return prev[m - 1]
 
-    vector<vector<int>> dp(m, vector<int>(n, -1));
-    return fmemo(m - 1, n - 1, obstacleGrid, dp);
-}
+def main():
+    # Example maze with 0s representing open paths and -1 representing obstacles.
+    maze = [[0, 0, 0],
+            [0, -1, 0],
+            [0, 0, 0]]
+    n = len(maze)
+    m = len(maze[0])
+    
+    # Call the mazeObstacles function and print the result.
+    print(mazeObstacles(n, m, maze))
+
+if __name__ == "__main__":
+    main()
+
