@@ -24,76 +24,176 @@ COMPLEXITY ANALYSIS:
 CODE:
 */
 // Memoization
-bool fmemo(int i, int sum, vector<int>& arr, vector<vector<int>>& dp) {
-    if (sum == 0)
-        return true;
 
-    if (dp[i][sum] != -1)
-        return dp[i][sum];
+def subsetSumUtil(ind, target, arr, dp):
+    # Base case: If the target sum is 0, we have found a subset that sums to the target.
+    if target == 0:
+        return True
+    
+    # Base case: If we have reached the first element of the array, check if it equals the target.
+    if ind == 0:
+        return arr[0] == target
+    
+    # Check if the result for this combination of 'ind' and 'target' has already been computed.
+    if dp[ind][target] != -1:
+        return dp[ind][target]
+    
+    # Recursive cases:
+    # 1. Try not taking the current element.
+    notTaken = subsetSumUtil(ind - 1, target, arr, dp)
+    
+    # 2. Try taking the current element if it is less than or equal to the target.
+    taken = False
+    if arr[ind] <= target:
+        taken = subsetSumUtil(ind - 1, target - arr[ind], arr, dp)
+        
+    # Update the DP table and return the result.
+    dp[ind][target] = notTaken or taken
+    return dp[ind][target]
 
-    if (i == 0)
-        return dp[i][sum] = (sum == arr[i]);
+def canPartition(n, arr):
+    # Calculate the total sum of the array elements.
+    totSum = sum(arr)
+    
+    # If the total sum is odd, it cannot be partitioned into two equal subsets.
+    if totSum % 2 == 1:
+        return False
+    else:
+        # Calculate the target sum for each subset.
+        k = totSum // 2
+        
+        # Initialize a memoization table for dynamic programming.
+        dp = [[-1 for i in range(k + 1)] for j in range(n)]
+        
+        # Call the subsetSumUtil function to check if a subset with sum 'k' exists.
+        return subsetSumUtil(n - 1, k, arr, dp)
 
-    bool t = false;
-    if (arr[i] <= sum)
-        t = fmemo(i - 1, sum - arr[i], arr, dp);
+def main():
+    arr = [2, 3, 3, 3, 4, 5]
+    n = len(arr)
+    
+    # Check if the array can be partitioned into two equal subsets and print the result.
+    if canPartition(n, arr):
+        print("The Array can be partitioned into two equal subsets")
+    else:
+        print("The Array cannot be partitioned into two equal subsets")
 
-    bool nt = fmemo(i - 1, sum, arr, dp);
+if __name__ == "__main__":
+    main()
 
-    return dp[i][sum] = (t || nt);
-}
+
 
 // Tabulation
-bool ftab(int n, int tar, vector<int>& arr){
-    vector<vector<int>> dp(n,vector<int>(tar+1));
-    for(int i=0; i<n; i++){
-        for(int sum=0; sum<=tar; sum++){
-            if(sum==0){
-                dp[i][sum] = true;
-                continue;
-            }
-            if(i==0){
-                dp[i][sum] = (sum==arr[i]);
-                continue;
-            }
-            bool t = false;
-            if(arr[i] <= sum) t = dp[i-1][sum-arr[i]];
-            bool nt = dp[i-1][sum];
-            dp[i][sum] = (t || nt);
-        }
-    }
-    return dp[n-1][tar];
-}
+
+def canPartition(n, arr):
+    # Calculate the total sum of the array elements.
+    totSum = sum(arr)
+    
+    # If the total sum is odd, it cannot be partitioned into two equal subsets.
+    if totSum % 2 == 1:
+        return False
+    else:
+        # Calculate the target sum for each subset.
+        k = totSum // 2
+        
+        # Initialize a dynamic programming table (dp) to store subproblem results.
+        dp = [[False for j in range(k + 1)] for i in range(n)]
+
+        # Initialize the base case: An empty subset can always achieve a sum of 0.
+        for i in range(n):
+            dp[i][0] = True
+
+        # Initialize the base case for the first element in the array.
+        if arr[0] <= k:
+            dp[0][arr[0]] = True
+
+        # Fill in the DP table using a bottom-up approach.
+        for ind in range(1, n):
+            for target in range(1, k + 1):
+                # If the current element is not taken, the result is the same as the previous row.
+                notTaken = dp[ind - 1][target]
+                
+                # If the current element is taken, subtract its value from the target and check the previous row.
+                taken = False
+                if arr[ind] <= target:
+                    taken = dp[ind - 1][target - arr[ind]]
+                
+                # Update the DP table with the result of taking or not taking the current element.
+                dp[ind][target] = notTaken or taken
+        
+        # The final result is stored in the bottom-right cell of the DP table.
+        return dp[n - 1][k]
+
+def main():
+    arr = [2, 3, 3, 3, 4, 5]
+    n = len(arr)
+    
+    # Check if the array can be partitioned into two equal subsets and print the result.
+    if canPartition(n, arr):
+        print("The Array can be partitioned into two equal subsets")
+    else:
+        print("The Array cannot be partitioned into two equal subsets")
+
+if __name__ == '__main__':
+    main()
+
 
 // Space Optimization
-bool fopt(int n, int tar, vector<int>& arr){
-    vector<int> prev(tar+1);
-    for(int i=0; i<n; i++){
-        vector<int> curr(tar+1);
-        for(int sum=0; sum<=tar; sum++){
-            if(sum==0){
-                curr[sum] = true;
-                continue;
-            }
-            if(i==0){
-                curr[sum] = (sum==arr[i]);
-                continue;
-            }
-            bool t = false;
-            if(arr[i] <= sum) t = prev[sum-arr[i]];
-            bool nt = prev[sum];
-            curr[sum] = (t || nt);
-        }
-        prev = curr;
-    }
-    return prev[tar];
-}
 
-bool canPartition(vector<int>& nums) {
-    int sum = 0, n = nums.size();
-    for(auto i:nums) sum+=i;
-    if(sum%2!=0) return false;
-    int k = sum/2;
-    vector<vector<int>> dp(n, vector<int>(k + 1, -1));
-    return fmemo(n-1,k,nums,dp);
-}
+def canPartition(n, arr):
+    # Calculate the total sum of the array elements.
+    totSum = sum(arr)
+    
+    # If the total sum is odd, it cannot be partitioned into two equal subsets.
+    if totSum % 2 == 1:
+        return False
+    else:
+        # Calculate the target sum for each subset.
+        k = totSum // 2
+        
+        # Initialize a boolean array 'prev' to store the results for the previous row.
+        prev = [False] * (k + 1)
+        prev[0] = True  # Base case: An empty subset can always achieve a sum of 0.
+        
+        # Handle the base case for the first element in the array.
+        if arr[0] <= k:
+            prev[arr[0]] = True
+
+        # Iterate through the elements in the array.
+        for ind in range(1, n):
+            # Initialize a new boolean array 'cur' for the current row.
+            cur = [False] * (k + 1)
+            cur[0] = True  # An empty subset can always achieve a sum of 0.
+
+            # Fill in the 'cur' array using dynamic programming.
+            for target in range(1, k + 1):
+                # If the current element is not taken, the result is the same as the previous row.
+                notTaken = prev[target]
+                
+                # If the current element is taken, subtract its value from the target and check the previous row.
+                taken = False
+                if arr[ind] <= target:
+                    taken = prev[target - arr[ind]]
+                
+                # Update the 'cur' array with the result of taking or not taking the current element.
+                cur[target] = notTaken or taken
+            
+            # Update 'prev' to 'cur' for the next iteration.
+            prev = cur
+        
+        # The final result is stored in 'prev[k]', indicating whether a subset with sum 'k' is possible.
+        return prev[k]
+
+def main():
+    arr = [2, 3, 3, 3, 4, 5]
+    n = len(arr)
+    
+    # Check if the array can be partitioned into two equal subsets and print the result.
+    if canPartition(n, arr):
+        print("The Array can be partitioned into two equal subsets")
+    else:
+        print("The Array cannot be partitioned into two equal subsets")
+
+if __name__ == "__main__":
+    main()
+
