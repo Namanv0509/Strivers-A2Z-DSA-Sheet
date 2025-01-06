@@ -32,40 +32,46 @@ Complexity Analysis:
 */
 
 // Memoization
-int fmemo(int i, int k, vector<int>& h, vector<int>& dp) {
-    if (i == 0)
-        return dp[i] = 0;
 
-    if (dp[i] != -1)
-        return dp[i];
+import sys
+import math
 
-    int ans = INT_MAX, temp = INT_MAX;
-    for (int j = 1; j <= k; j++) {
-        if (i - j >= 0)
-            temp = fmemo(i - j, k, h, dp) + abs(h[i] - h[i - j]);
-        ans = min(ans, temp);
-    }
+def solve(ind, height, dp):
+    if ind == 0:
+        return 0
+    if dp[ind] != -1:
+        return dp[ind]
+    jumpTwo = sys.maxsize
+    jumpOne = solve(ind-1, height, dp) + abs(height[ind] - height[ind-1])
+    if ind > 1:
+        jumpTwo = solve(ind-2, height, dp) + abs(height[ind] - height[ind-2])
+    dp[ind] = min(jumpOne, jumpTwo)
+    return dp[ind]
 
-    return dp[i] = ans;
-}
+if __name__ == "__main__":
+    height = [30, 10, 60, 10, 60, 50]
+    n = len(height)
+    dp = [-1] * n
+    print(solve(n-1, height, dp))
+
+
 
 // Tabulation
-int ftab(int i, int k, vector<int>& h){
-    int n = h.size();
-    vector<int> dp(n,INT_MAX);
-    dp[0] = 0;
 
-    int temp = INT_MAX;
-    for(int i=1; i<n; i++){
-        for(int j=1; j<=k; j++){
-            if(i-j >= 0) temp = dp[i-j]+abs(h[i]-h[i-j]);
-            dp[i] = min(dp[i],temp);
-        }
-    }
-    return dp[n-1];
-}
+def main():
+    height = [30, 10, 60, 10, 60, 50]
+    n = len(height)
+    dp = [-1 for _ in range(n)]
+    dp[0] = 0
+    for ind in range(1, n):
+        jumpTwo = float('inf')
+        jumpOne = dp[ind-1] + abs(height[ind]-height[ind-1])
+        if ind > 1:
+            jumpTwo = dp[ind-2] + abs(height[ind]-height[ind-2])
+        dp[ind] = min(jumpOne, jumpTwo)
+    print(dp[n-1])
 
-int minimizeCost(int n, int k, vector<int>& height) {
-    vector<int> dp(n, -1);
-    return fmemo(n - 1, k, height, dp);
-}
+if __name__ == "__main__":
+    main()
+
+
