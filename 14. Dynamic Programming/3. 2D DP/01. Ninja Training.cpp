@@ -30,72 +30,133 @@ Complexity Analysis:
 
 */
 
-# Function to calculate the maximum points
-def sub(points, last, index, dp):
-    # Return if all work is done
-    if index == len(points):
-        return 0
+// Memotization
+def f(day, last, points, dp):
+    # Check if the result for this day and last
+activity is already computed.
+    if dp[day][last] != -1:
+        return dp[day][last]
 
-    # If state has been explored previously, return the answer
-    if dp[index][last] != -1:
-        return dp[index][last]
+    # Base case: When we reach day 0, return the maximum point for the last day.
+    if day == 0:
+        maxi = 0
+        for i in range(3):
+            if i != last:
+                maxi = max(maxi, points[0][i])
+        dp[day][last] = maxi
+        return dp[day][last]
 
-    # Store the optimal answer for the current index and last activity
-    ans = 0
+    maxi = 0
+    # Iterate through all activities for the current day.
+    for i in range(3):
+        if i != last:
+            # Calculate the total points for the current day's activity and recursively call for the previous day.
+            activity = points[day][i] + f(day - 1, i, points, dp)
+            maxi = max(maxi, activity)
 
-    # If this is the first activity
-    if last == 0:
-        ans = max(
-            ans,
-            max(
-                points[index][0] + sub(points, 1, index + 1, dp),
-                points[index][1] + sub(points, 2, index + 1, dp),
-                points[index][2] + sub(points, 3, index + 1, dp),
-            ),
-        )
+    # Store the maximum points in the DP table and return it.
+    dp[day][last] = maxi
+    return dp[day][last]
 
-    # If the first activity was selected last time
-    elif last == 1:
-        ans = max(
-            ans,
-            max(
-                points[index][1] + sub(points, 2, index + 1, dp),
-                points[index][2] + sub(points, 3, index + 1, dp),
-            ),
-        )
+def ninjaTraining(n, points):
+    # Initialize a DP table to store the computed results.
+    dp = [[-1 for j in range(4)] for i in range(n)]
+    # Start the recursive function from the last day with no previous activity.
+    return f(n - 1, 3, points, dp)
 
-    # If the second activity was selected last time
-    elif last == 2:
-        ans = max(
-            ans,
-            max(
-                points[index][0] + sub(points, 1, index + 1, dp),
-                points[index][2] + sub(points, 3, index + 1, dp),
-            ),
-        )
+def main():
+    # Define the points matrix for each day.
+    points = [[10, 40, 70],
+              [20, 50, 80],
+              [30, 60, 90]]
 
-    # If the third activity was selected last time
-    else:
-        ans = max(
-            ans,
-            max(
-                points[index][1] + sub(points, 2, index + 1, dp),
-                points[index][0] + sub(points, 1, index + 1, dp),
-            ),
-        )
+    n = len(points)  # Get the number of days.
+    # Call the ninjaTraining function to find the maximum points.
+    print(ninjaTraining(n, points))
 
-    # Save the maximum possible points for this index with this last activity
-    dp[index][last] = ans
-    return ans
+if __name__ == '__main__':
+    main()
 
+// Tabulation
 
-# Driver code
-if __name__ == "__main__":
-    n = 3
-    points = [[1, 2, 5], [3, 1, 1], [3, 3, 3]]
+def ninjaTraining(n, points):
+    # Initialize a DP table with dimensions (n x 4) to store the maximum points.
+    dp = [[0 for j in range(4)] for i in range(n)]
 
-    # Initialize all states of dp with -1
-    dp = [[-1 for _ in range(4)] for _ in range(len(points))]
+    # Initialize the DP table for day 0 with base cases.
+    dp[0][0] = max(points[0][1], points[0][2])
+    dp[0][1] = max(points[0][0], points[0][2])
+    dp[0][2] = max(points[0][0], points[0][1])
+    dp[0][3] = max(points[0][0], max(points[0][1], points[0][2]))
 
-    # Function Call
-    print("Maximum Points We Can Make:", sub(points, 0, 0, dp))
+    # Loop through the days starting from the second day.
+    for day in range(1, n):
+        for last in range(4):
+            dp[day][last] = 0  # Initialize the maximum points for the current day and last activity.
+            for task in range(3):
+                if task != last:
+                    # Calculate the total points for the current day's activity and the previous day's maximum points.
+                    activity = points[day][task] + dp[day - 1][task]
+                    dp[day][last] = max(dp[day][last], activity)
+
+    # Return the maximum points achievable after the last day with any activity.
+    return dp[n - 1][3]
+
+def main():
+    # Define the points matrix for each day.
+    points = [[10, 40, 70],
+              [20, 50, 80],
+              [30, 60, 90]]
+    n = len(points)  # Get the number of days.
+    # Call the ninjaTraining function to find the maximum points.
+    print(ninjaTraining(n, points))
+
+if __name__ == '__main__':
+    main()
+
+// Space Optimization
+
+def ninjaTraining(n, points):
+    # Initialize a list 'prev' to store the maximum points for each possible last activity on the previous day.
+    prev = [0] * 4
+
+    # Initialize 'prev' with the maximum points for the first day's activities.
+    prev[0] = max(points[0][1], points[0][2])
+    prev[1] = max(points[0][0], points[0][2])
+    prev[2] = max(points[0][0], points[0][1])
+    prev[3] = max(points[0][0], max(points[0][1], points[0][2]))
+
+    # Loop through the days starting from the second day.
+    for day in range(1, n):
+        # Initialize a temporary list 'temp' to store the maximum points for each possible last activity on the current day.
+        temp = [0] * 4
+
+        for last in range(4):
+            # Initialize 'temp' for the current last activity.
+            temp[last] = 0
+
+            for task in range(3):
+                if task != last:
+                    # Calculate the total points for the current day's activity and the previous day's maximum points.
+                    activity = points[day][task] + prev[task]
+                    # Update 'temp' with the maximum points for the current last activity.
+                    temp[last] = max(temp[last], activity)
+
+        # Update 'prev' with 'temp' for the next iteration.
+        prev = temp
+
+    # Return the maximum points achievable after the last day with any activity.
+    return prev[3]
+
+def main():
+    # Define the points matrix for each day.
+    points = [[10, 40, 70],
+              [20, 50, 80],
+              [30, 60, 90]]
+    n = len(points)  # Get the number of days.
+    # Call the ninjaTraining function to find and print the maximum points.
+    print(ninjaTraining(n, points))
+
+if __name__ == '__main__':
+    main()
+
