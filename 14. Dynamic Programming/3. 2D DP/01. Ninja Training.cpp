@@ -30,60 +30,72 @@ Complexity Analysis:
 
 */
 
-//Memoization
-int fmemo(int n, int prev, vector<vector<int>>& points, vector<vector<int>>& memo) {
-    if (n < 0)
-        return 0;
+# Function to calculate the maximum points
+def sub(points, last, index, dp):
+    # Return if all work is done
+    if index == len(points):
+        return 0
 
-    if (prev != -1 && memo[n][prev] != -1) {
-        return memo[n][prev];
-    }
+    # If state has been explored previously, return the answer
+    if dp[index][last] != -1:
+        return dp[index][last]
 
-    int ans = 0;
-    for (int i = 0; i < 3; i++) {
-        if (i != prev) {
-            int temp = points[n][i] + fmemo(n - 1, i, points, memo);
-            ans = max(ans, temp);
-        }
-    }
+    # Store the optimal answer for the current index and last activity
+    ans = 0
 
-    if (prev != -1) {
-        memo[n][prev] = ans;
-    }
+    # If this is the first activity
+    if last == 0:
+        ans = max(
+            ans,
+            max(
+                points[index][0] + sub(points, 1, index + 1, dp),
+                points[index][1] + sub(points, 2, index + 1, dp),
+                points[index][2] + sub(points, 3, index + 1, dp),
+            ),
+        )
 
-    return ans;
-}
+    # If the first activity was selected last time
+    elif last == 1:
+        ans = max(
+            ans,
+            max(
+                points[index][1] + sub(points, 2, index + 1, dp),
+                points[index][2] + sub(points, 3, index + 1, dp),
+            ),
+        )
 
-//Tbaulation
-int ftab(int n, vector<vector<int>>& points) {
-    vector<vector<int>> dp(n, vector<int>(3, 0));
+    # If the second activity was selected last time
+    elif last == 2:
+        ans = max(
+            ans,
+            max(
+                points[index][0] + sub(points, 1, index + 1, dp),
+                points[index][2] + sub(points, 3, index + 1, dp),
+            ),
+        )
 
-    // Base case: for the first row, the maximum points for each column are the points in that row.
-    for (int i = 0; i < 3; i++) {
-        dp[0][i] = points[0][i];
-    }
+    # If the third activity was selected last time
+    else:
+        ans = max(
+            ans,
+            max(
+                points[index][1] + sub(points, 2, index + 1, dp),
+                points[index][0] + sub(points, 1, index + 1, dp),
+            ),
+        )
 
-    // Calculate the maximum points for each row while considering the previous row's choices.
-    for (int i = 1; i < n; i++) {
-        for (int j = 0; j < 3; j++) {
-            for (int k = 0; k < 3; k++) {
-                if (j != k) {
-                    dp[i][j] = max(dp[i][j], points[i][j] + dp[i - 1][k]);
-                }
-            }
-        }
-    }
+    # Save the maximum possible points for this index with this last activity
+    dp[index][last] = ans
+    return ans
 
-    // Find the maximum points among all choices for the last row.
-    int ans = 0;
-    for (int i = 0; i < 3; i++) {
-        ans = max(ans, dp[n - 1][i]);
-    }
 
-    return ans;
-}
+# Driver code
+if __name__ == "__main__":
+    n = 3
+    points = [[1, 2, 5], [3, 1, 1], [3, 3, 3]]
 
-int maximumPoints(vector<vector<int>>& points, int n) {
-    vector<vector<int>> memo(n, vector<int>(3, -1));
-    return fmemo(n - 1, -1, points, memo);
-}
+    # Initialize all states of dp with -1
+    dp = [[-1 for _ in range(4)] for _ in range(len(points))]
+
+    # Function Call
+    print("Maximum Points We Can Make:", sub(points, 0, 0, dp))
