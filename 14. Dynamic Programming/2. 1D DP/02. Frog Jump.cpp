@@ -18,49 +18,36 @@ Complexity Analysis:
 */
 
 // Memoization
-int fmemo(int i, vector<int>& h, vector<int>& dp) {
-    if (i == 0)
-        return dp[i] = 0;
-
-    if (dp[i] != -1)
-        return dp[i];
-
-    int s1 = INT_MAX, s2 = INT_MAX;
-    if (i - 1 >= 0)
-        s1 = fmemo(i - 1, h, dp) + abs(h[i - 1] - h[i]);
-    if (i - 2 >= 0)
-        s2 = fmemo(i - 2, h, dp) + abs(h[i - 2] - h[i]);
-
-    return dp[i] = min(s1, s2);
-}
-
-// Tabulation
-int ftab(int n, vector<int>& h){
-    vector<int> dp(n);
-    dp[0] = 0;
-    for(int i=1; i<n; i++){
-        int s1 = INT_MAX, s2 = INT_MAX;
-        if(i-1>=0) s1 = dp[i-1]+abs(h[i-1]-h[i]);
-        if(i-2>=0) s2 = dp[i-2]+abs(h[i-2]-h[i]);
-        dp[i] = min(s1,s2);
-    }
-    return dp[n-1];
-}
-
-// Space Optimized
-int fopt(int n, vector<int>& h){
-    int p1 = 0, p2 = 0, ans = 0;
-    for(int i=1; i<n; i++){
-        int s1 = INT_MAX, s2 = INT_MAX;
-        if(i-1>=0) s1 = p1+abs(h[i-1]-h[i]);
-        if(i-2>=0) s2 = p2+abs(h[i-2]-h[i]);
-        ans = min(s1,s2);
-        p2 = p1; p1 = ans;
-    }
-    return ans;
-}
-
-int minimumEnergy(vector<int>& height, int n) {
-    return fopt(n, height);
-}
-
+class Solution:
+#MEMOIZATION
+    # def helper(self,height,i,dp):
+    #     if i<1:return 0
+        
+    #     if dp[i] != -1: return dp[i]
+        
+    #     jump_one = self.helper(height,i-1,dp) + abs(height[i] - height[i-1])
+        
+    #     jump_two = float('inf')
+    #     if (i>1):
+    #         jump_two = self.helper(height,i-2,dp) + abs(height[i] - height[i-2])
+            
+    #     dp[i] = min(jump_one,jump_two)
+    #     return dp[i]
+        
+    # def minimumEnergy(self, height, n):
+    #     dp = [-1] * (n+1)
+    #     return self.helper(height,n-1,dp)
+    
+    
+#TABULATION
+    def minimumEnergy(self,height,i):
+        n = len(height)
+        dp = [-1] * (n+1)
+        dp[0] = 0
+        for ind in range(1, n):
+            jumpTwo = float('inf')
+            jumpOne = dp[ind-1] + abs(height[ind]-height[ind-1])
+            if ind > 1:
+                jumpTwo = dp[ind-2] + abs(height[ind]-height[ind-2])
+            dp[ind] = min(jumpOne, jumpTwo)
+        return(dp[n-1])
