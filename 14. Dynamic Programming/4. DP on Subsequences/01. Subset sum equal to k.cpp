@@ -28,74 +28,143 @@ Complexity Analysis:
 
 
 // Memoization
-bool fmemo(int i, int sum, vector<int>& arr, vector<vector<int>>& dp) {
-    if (sum == 0)
-        return true;
 
-    if (dp[i][sum] != -1)
-        return dp[i][sum];
+def subsetSumUtil(ind, target, arr, dp):
+    # Check if the target sum has been achieved.
+    if target == 0:
+        return True
 
-    if (i == 0)
-        return dp[i][sum] = (sum == arr[i]);
+    # If we have reached the first element in the array.
+    if ind == 0:
+        return arr[0] == target
 
-    bool t = false;
-    if (arr[i] <= sum)
-        t = fmemo(i - 1, sum - arr[i], arr, dp);
+    # Check if the result for this combination of 'ind' and 'target' has already been computed.
+    if dp[ind][target] != -1:
+        return dp[ind][target]
 
-    bool nt = fmemo(i - 1, sum, arr, dp);
+    # Recursively try not taking the current element.
+    notTaken = subsetSumUtil(ind - 1, target, arr, dp)
 
-    return dp[i][sum] = (t || nt);
-}
+    taken = False
+    # Check if the current element can be taken without exceeding the target.
+    if arr[ind] <= target:
+        taken = subsetSumUtil(ind - 1, target - arr[ind], arr, dp)
+
+    # Store the result in the dp array to avoid recomputation.
+    dp[ind][target] = notTaken or taken
+    return dp[ind][target]
+
+def subsetSumToK(n, k, arr):
+    # Initialize a memoization table with -1.
+    dp = [[-1 for j in range(k + 1)] for i in range(n)]
+
+    # Call the utility function to find if a subset with the given target sum exists.
+    return subsetSumUtil(n - 1, k, arr, dp)
+
+def main():
+    arr = [1, 2, 3, 4]
+    k = 4
+    n = len(arr)
+
+    if subsetSumToK(n, k, arr):
+        print("Subset with the given target found")
+    else:
+        print("Subset with the given target not found")
+
+if __name__ == "__main__":
+    main()
 
 // Tabulation
-bool ftab(int n, int tar, vector<int>& arr){
-    vector<vector<int>> dp(n,vector<int>(tar+1));
-    for(int i=0; i<n; i++){
-        for(int sum=0; sum<=tar; sum++){
-            if(sum==0){
-                dp[i][sum] = true;
-                continue;
-            }
-            if(i==0){
-                dp[i][sum] = (sum==arr[i]);
-                continue;
-            }
-            bool t = false;
-            if(arr[i] <= sum) t = dp[i-1][sum-arr[i]];
-            bool nt = dp[i-1][sum];
-            dp[i][sum] = (t || nt);
-        }
-    }
-    return dp[n-1][tar];
-}
+
+def subsetSumToK(n, k, arr):
+    # Initialize a 2D DP table with False values.
+    dp = [[False for j in range(k + 1)] for i in range(n)]
+    
+    # Set the first column to True since a sum of 0 is always possible with an empty subset.
+    for i in range(n):
+        dp[i][0] = True
+    
+    # Check if the first element of the array can be used to make the target sum.
+    if arr[0] <= k:
+        dp[0][arr[0]] = True
+    
+    # Fill in the DP table iteratively.
+    for ind in range(1, n):
+        for target in range(1, k + 1):
+            notTaken = dp[ind - 1][target]  # Not taking the current element.
+            taken = False
+            # Check if taking the current element is possible without exceeding the target.
+            if arr[ind] <= target:
+                taken = dp[ind - 1][target - arr[ind]]
+            dp[ind][target] = notTaken or taken  # Update the DP table with the result.
+    
+    # The final result is stored in the bottom-right cell of the DP table.
+    return dp[n - 1][k]
+
+def main():
+    arr = [1, 2, 3, 4]
+    k = 4
+    n = len(arr)
+
+    if subsetSumToK(n, k, arr):
+        print("Subset with the given target found")
+    else:
+        print("Subset with the given target not found")
+
+if __name__ == '__main__':
+    main()
+
+
 
 // Space Optimization
-bool fopt(int n, int tar, vector<int>& arr){
-    vector<int> prev(tar+1);
-    for(int i=0; i<n; i++){
-        vector<int> curr(tar+1);
-        for(int sum=0; sum<=tar; sum++){
-            if(sum==0){
-                curr[sum] = true;
-                continue;
-            }
-            if(i==0){
-                curr[sum] = (sum==arr[i]);
-                continue;
-            }
-            bool t = false;
-            if(arr[i] <= sum) t = prev[sum-arr[i]];
-            bool nt = prev[sum];
-            curr[sum] = (t || nt);
-        }
-        prev = curr;
-    }
-    return prev[tar];
-}
 
-bool isSubsetSum(vector<int> arr, int sum) {
-    int n = arr.size();
-    vector<vector<int>> dp(n, vector<int>(sum + 1, -1));
+def subset_sum_to_k(n, k, arr):
+    # Initialize a boolean array 'prev' with size (k + 1).
+    prev = [False] * (k + 1)
+    
+    # Set the first element of 'prev' to True since an empty subset can sum up to 0.
+    prev[0] = True
+    
+    # Check if the first element of 'arr' can directly contribute to the target sum 'k'.
+    if arr[0] <= k:
+        prev[arr[0]] = True
 
-    return fmemo(n - 1, sum, arr, dp);
-}
+    # Loop through the elements of 'arr' and update 'prev' using dynamic programming.
+    for ind in range(1, n):
+        # Initialize a new boolean array 'cur' for the current element.
+        cur = [False] * (k + 1)
+        
+        # An empty subset can always sum up to 0.
+        cur[0] = True
+        
+        for target in range(1, k + 1):
+            not_taken = prev[target]  # Previous result without including the current element.
+            taken = False
+            
+            # Check if including the current element is possible without exceeding the target.
+            if arr[ind] <= target:
+                taken = prev[target - arr[ind]]
+            
+            # Update 'cur' with the result for the current 'target'.
+            cur[target] = not_taken or taken
+        
+        # Update 'prev' with the results for the current element 'ind'.
+        prev = cur
+
+    # The final result is stored in 'prev[k]'.
+    return prev[k]
+
+def main():
+    arr = [1, 2, 3, 4]
+    k = 4
+    n = len(arr)
+
+    if subset_sum_to_k(n, k, arr):
+        print("Subset with the given target found")
+    else:
+        print("Subset with the given target not found")
+
+if __name__ == "__main__":
+    main()
+
+
