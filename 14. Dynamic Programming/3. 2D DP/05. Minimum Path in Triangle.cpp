@@ -29,56 +29,114 @@ Complexity Analysis:
 */
 
 // Memoization
-int fmemo(int i, int j, int n, vector<vector<int>>& tri, vector<vector<int>>& dp) {
-    if (dp[i][j] != -1)
-        return dp[i][j];
 
-    if (i == n - 1)
-        return dp[i][j] = tri[i][j];
+def minimumPathSumUtil(i, j, triangle, n, dp):
+    # Check if we have already computed the minimum path sum for this cell
+    if dp[i][j] != -1:
+        return dp[i][j]
 
-    int a = fmemo(i + 1, j, n, tri, dp);
-    int b = fmemo(i + 1, j + 1, n, tri, dp);
-    return dp[i][j] = min(a, b) + tri[i][j];
-}
+    # If we are at the bottom of the triangle, return the value in the current cell
+    if i == n - 1:
+        return triangle[i][j]
+
+    # Calculate the minimum path sum by considering two possible moves: down and diagonal
+    down = triangle[i][j] + minimumPathSumUtil(i + 1, j, triangle, n, dp)
+    diagonal = triangle[i][j] + minimumPathSumUtil(i + 1, j + 1, triangle, n, dp)
+
+    # Store the computed minimum path sum in the memoization table
+    dp[i][j] = min(down, diagonal)
+    return dp[i][j]
+
+# Define a wrapper function to initialize memoization table and start the computation
+def minimumPathSum(triangle, n):
+    dp = [[-1 for j in range(n)] for i in range(n)]  # Initialize a memoization table with -1
+    return minimumPathSumUtil(0, 0, triangle, n, dp)  # Start the recursive computation
+
+# Define the main function where you set up the triangle and call the minimumPathSum function
+def main():
+    triangle = [[1], [2, 3], [3, 6, 7], [8, 9, 6, 10]]
+    n = len(triangle)
+
+    # Call the minimumPathSum function and print the result
+    print(minimumPathSum(triangle, n))
+
+# Check if this script is the main program entry point
+if __name__ == "__main__":
+    main()  # Call the main function to start the program
+
 
 // Tabulation
-int ftab(int n, vector<vector<int>>& tri){
-    vector<vector<int>> dp(n,vector<int>(n));
-    for(int i=n-1; i>=0; i--){
-        for(int j=i; j>=0; j--){
-            if(i==n-1){
-                dp[i][j] = tri[i][j];
-                continue;
-            }
-            int a = dp[i+1][j];
-            int b = dp[i+1][j+1];
-            dp[i][j] = min(a,b)+tri[i][j];
-        }
-    }
-    return dp[0][0];
-}
+
+def minimum_path_sum(triangle, n):
+    # Create a 2D array dp to store minimum path sums
+    dp = [[0 for j in range(n)] for i in range(n)]
+    
+    # Initialize the bottom row of dp with the values from the last row of the triangle
+    for j in range(n):
+        dp[n - 1][j] = triangle[n - 1][j]
+    
+    # Start from the second-to-last row and work upwards
+    for i in range(n - 2, -1, -1):
+        for j in range(i, -1, -1):
+            # Calculate the minimum path sum for the current cell by considering two possible moves: down and diagonal
+            down = triangle[i][j] + dp[i + 1][j]
+            diagonal = triangle[i][j] + dp[i + 1][j + 1]
+            
+            # Store the minimum of the two possible moves in dp
+            dp[i][j] = min(down, diagonal)
+    
+    # The minimum path sum will be stored in dp[0][0] after the loops
+    return dp[0][0]
+
+def main():
+    # Define the input triangle and its size
+    triangle = [[1], [2, 3], [3, 6, 7], [8, 9, 6, 10]]
+    n = len(triangle)
+    
+    # Call the minimum_path_sum function and print the result
+    print(minimum_path_sum(triangle, n))
+
+if __name__ == '__main__':
+    main()
+
+
 
 // Space Optimization
-int fopt(int n, vector<vector<int>>& tri){
-    vector<int> prev(n);
-    for(int i=n-1; i>=0; i--){
-        vector<int> curr(n);
-        for(int j=i; j>=0; j--){
-            if(i==n-1){
-                curr[j] = tri[i][j];
-                continue;
-            }
-            int a = prev[j];
-            int b = prev[j+1];
-            curr[j] = min(a,b)+tri[i][j];
-        }
-        prev = curr;
-    }
-    return prev[0];
-}
 
-int minimumTotal(vector<vector<int>>& triangle) {
-    int n = triangle.size();
-    vector<vector<int>> dp(n, vector<int>(n, -1));
-    return fmemo(0, 0, n, triangle, dp);
-}
+def minimumPathSum(triangle, n):
+    # Initialize two lists: front and cur to represent the current and previous rows in dp
+    front = [0] * n  # This represents the previous row
+    cur = [0] * n    # This represents the current row
+    
+    # Initialize the bottom row of dp (front) with the values from the last row of the triangle
+    for j in range(n):
+        front[j] = triangle[n - 1][j]
+    
+    # Start from the second-to-last row and work upwards
+    for i in range(n - 2, -1, -1):
+        for j in range(i, -1, -1):
+            # Calculate the minimum path sum for the current cell by considering two possible moves: down and diagonal
+            down = triangle[i][j] + front[j]
+            diagonal = triangle[i][j] + front[j + 1]
+            
+            # Store the minimum of the two possible moves in the current row (cur)
+            cur[j] = min(down, diagonal)
+        
+        # Update the previous row (front) with the current row (cur) for the next iteration
+        front = cur
+        
+    # The minimum path sum will be stored in the first element of the front list after the loops
+    return front[0]
+
+def main():
+    # Define the input triangle and its size
+    triangle = [[1], [2, 3], [3, 6, 7], [8, 9, 6, 10]]
+    n = len(triangle)
+    
+    # Call the minimumPathSum function and print the result
+    print(minimumPathSum(triangle, n))
+
+if __name__ == '__main__':
+    main()
+
+
