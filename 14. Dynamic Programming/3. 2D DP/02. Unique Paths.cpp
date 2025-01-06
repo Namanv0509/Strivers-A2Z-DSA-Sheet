@@ -25,56 +25,137 @@ Note: The given test cases are generated such that the answer will be less than 
 */
 
 //Memeoization
-int fmemo(int i, int j, vector<vector<int>>& dp) {
-    if (i < 0 || j < 0)
-        return 0;
 
-    if (dp[i][j] != -1)
-        return dp[i][j];
+def countWaysUtil(i, j, dp):
+    # Base case: If we reach the top-left corner (i=0, j=0), there is one way to reach there.
+    if i == 0 and j == 0:
+        return 1
+    # If either i or j goes out of bounds (negative), there is no way to reach that cell.
+    if i < 0 or j < 0:
+        return 0
+    # If we have already calculated the number of ways for this cell, return it from the dp array.
+    if dp[i][j] != -1:
+        return dp[i][j]
+    
+    # Recursive calls to count the number of ways to reach the current cell.
+    up = countWaysUtil(i - 1, j, dp)    # Moving up one row.
+    left = countWaysUtil(i, j - 1, dp)  # Moving left one column.
+    
+    # Store the result in the dp array and return it.
+    dp[i][j] = up + left
+    return dp[i][j]
 
-    int top = fmemo(i - 1, j, dp);
-    int left = fmemo(i, j - 1, dp);
-    return dp[i][j] = top + left;
-}
+def countWays(m, n):
+    # Initialize a memoization (dp) array to store intermediate results.
+    dp = [[-1 for j in range(n)] for i in range(m)]
+    
+    # Call the utility function to compute the number of ways to reach the bottom-right cell (m-1, n-1).
+    return countWaysUtil(m - 1, n - 1, dp)
+
+def main():
+    m = 3
+    n = 2
+    # Call the countWays function to calculate and print the number of ways to reach the destination.
+    print(countWays(m, n))
+
+if __name__ == '__main__':
+    main()
+
+
 
 //Tabulation
-int ftab(int m, int n){
-    vector<vector<int>> dp(m,vector<int>(n));
-    dp[0][0] = 1;
-    for(int i=0; i<m; i++){
-        for(int j=0; j<n; j++){
-            if(i==0 && j==0) continue;
-            int top = 0, left = 0;
-            if(i-1>=0) top = top = dp[i-1][j];
-            if(j-1>=0) left = dp[i][j-1];
-            dp[i][j] = top+left;
-        }
-    }
-    return dp[m-1][n-1];
-}
+
+def countWaysUtil(m, n, dp):
+    # Loop through each cell in the grid
+    for i in range(m):
+        for j in range(n):
+            # Base condition: If we are at the top-left corner, there is one way to reach it.
+            if i == 0 and j == 0:
+                dp[i][j] = 1
+                continue
+            
+            # Initialize variables to store the number of ways from above and from the left.
+            up = 0
+            left = 0
+            
+            # Check if moving up is a valid option (not out of bounds).
+            if i > 0:
+                up = dp[i - 1][j]
+            
+            # Check if moving left is a valid option (not out of bounds).
+            if j > 0:
+                left = dp[i][j - 1]
+            
+            # Calculate and store the number of ways to reach the current cell.
+            dp[i][j] = up + left
+    
+    # The bottom-right cell (m-1, n-1) now contains the total number of ways to reach there.
+    return dp[m - 1][n - 1]
+
+def countWays(m, n):
+    # Initialize a memoization (dp) array to store intermediate results.
+    dp = [[-1 for j in range(n)] for i in range(m)]
+    
+    # Call the utility function to compute the number of ways to reach the destination.
+    return countWaysUtil(m, n, dp)
+
+def main():
+    m = 3
+    n = 2
+    # Call the countWays function to calculate and print the number of ways to reach the destination.
+    print(countWays(m, n))
+
+if __name__ == '__main__':
+    main()
+
+
 
 //Space Optimization
-int fopt(int m, int n){
-    vector<int> prev(n);
-    prev[0] = 1;
-    for(int i=0; i<m; i++){
-        vector<int> curr(n);
-        curr[0] = 1;
-        for(int j=0; j<n; j++){
-            if(i==0 && j==0) continue;
-            int top = 0, left = 0;
-            if(i-1>=0) top = top = prev[j];
-            if(j-1>=0) left = curr[j-1];
-            curr[j] = top+left;
-        }
-        prev = curr;
-    }
-    return prev[n-1];
-}
 
+def countWays(m, n):
+    # Initialize a previous row to store intermediate results.
+    prev = [0] * n
 
-int uniquePaths(int m, int n) {
-    vector<vector<int>> dp(m, vector<int>(n, -1));
-    return fmemo(m - 1, n - 1, dp);
-}
+    # Loop through each row of the grid.
+    for i in range(m):
+        # Initialize a temporary row to store current row results.
+        temp = [0] * n
+        
+        # Loop through each column of the grid.
+        for j in range(n):
+            # Base case: If we are at the top-left corner, there is one way to reach it.
+            if i == 0 and j == 0:
+                temp[j] = 1
+                continue
+            
+            # Initialize variables to store the number of ways from above and from the left.
+            up = 0
+            left = 0
+            
+            # Check if moving up is a valid option (not out of bounds).
+            if i > 0:
+                up = prev[j]
+            
+            # Check if moving left is a valid option (not out of bounds).
+            if j > 0:
+                left = temp[j - 1]
+                
+            # Calculate and store the number of ways to reach the current cell.
+            temp[j] = up + left
+        
+        # Update the previous row with the current row results.
+        prev = temp
+    
+    # The last element in the previous row (prev) now contains the total number of ways to reach the destination.
+    return prev[n - 1]
+
+def main():
+    m = 3
+    n = 2
+    # Call the countWays function to calculate and print the number of ways to reach the destination.
+    print(countWays(m, n))
+
+if __name__ == '__main__':
+    main()
+
 
