@@ -26,50 +26,50 @@ Complexity Analysis:
 */
 
 //Memoization
-int fmemo(int i, vector<int>& nums, vector<int>& dp) {
-    if (i < 0)
-        return 0;
-
-    if (i == 0)
-        return dp[i] = nums[i];
-
-    if (dp[i] != -1)
-        return dp[i];
-
-    int take = nums[i] + fmemo(i - 2, nums, dp);
-    int notake = fmemo(i - 1, nums, dp);
-    return dp[i] = max(take, notake);
-}
+class Solution:
+    def rob(self, nums: List[int]) -> int:
+        prev1, prev2 = 0, 0
+        for num in nums:
+            current = max(prev1, prev2 + num)
+            prev2, prev1 = prev1, current
+        return prev1
 
 //Tabulation
-int ftab(int n, vector<int>& nums){
-    vector<int> dp(n);
-    dp[0] = nums[0];
-    for(int i=1; i<n; i++){
-        int take = nums[i];
-        if(i-2 >= 0) take += dp[i-2];
-        int notake = dp[i-1];
-        dp[i] = max(take,notake);
-    }
-    return dp[n-1];
-}
+def ftab(n, nums):
+    dp = [0] * n
+    dp[0] = nums[0]
+    for i in range(1, n):
+        take = nums[i]
+        if i - 2 >= 0:
+            take += dp[i - 2]
+        notake = dp[i - 1]
+        dp[i] = max(take, notake)
+    return dp[n - 1]
 
 //Space Optimization
-int fopt(int n, vector<int>& nums){
-    int p1 = nums[0], p2 = 0, ans = p1;
-    for(int i=1; i<n; i++){
-        int take = nums[i];
-        if(i-2 >= 0) take += p2;
-        int notake = p1;
-        ans = max(take,notake);
-        p2 = p1; p1 = ans;
-    }
-    return ans;
-}
+def fopt(n, nums):
+    p1 = nums[0]
+    p2 = 0
+    ans = p1
+    for i in range(1, n):
+        take = nums[i]
+        if i - 2 >= 0:
+            take += p2
+        notake = p1
+        ans = max(take, notake)
+        p2 = p1
+        p1 = ans
+    return ans
 
+def fmemo(idx, nums, dp):
+    if idx == 0:
+        return nums[0]
+    if idx < 0:
+        return 0
+    if dp[idx] != -1:
+        return dp[idx]
 
-int rob(vector<int>& nums) {
-    int n = nums.size();
-    vector<int> dp(n, -1);
-    return fmemo(n - 1, nums, dp);
-}
+    take = nums[idx] + fmemo(idx - 2, nums, dp)
+    notake = fmemo(idx - 1, nums, dp)
+    dp[idx] = max(take, notake)
+    return dp[idx]
